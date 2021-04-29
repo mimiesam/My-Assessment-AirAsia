@@ -1,0 +1,454 @@
+>>> from pyspark.sql import SparkSession
+>>> spark=SparkSession.builder.master(["local[1]"]).appName("SparkByExamples.com").getOrCreate()
+>>> from pyspark.sql import functions as F
+>>> from urllib.request import Request, urlopen
+>>> onlineData="https://randomuser.me/api/0.8/?results=1000"
+>>> httpData=urlopen(onlineData).read().decode('utf-8')
+>>> rdd=sc.parallelize([httpData])
+>>> jsonDF=spark.read.json(rdd)
+>>> test1=jsonDF.withColumn('Exp_Results', F.explode('results')).drop('nationality','results','seed','version')
+>>> test1
+DataFrame[Exp_Results: struct<user:struct<cell:string,dob:bigint,email:string,gender:string,location:struct<city:string,state:string,street:string,zip:bigint>,md5:string,name:struct<first:string,last:string,title:string>,password:string,phone:string,picture:struct<large:string,medium:string,thumbnail:string>,registered:bigint,salt:string,sha1:string,sha256:string,username:string>>]
+>>> test1.show()
++--------------------+
+|         Exp_Results|
++--------------------+
+|[[996-851-5628, 1...|
+|[[765-277-2559, 6...|
+|[[356-376-7832, 5...|
+|[[478-671-9524, 1...|
+|[[629-541-3142, 8...|
+|[[547-978-6535, 5...|
+|[[606-435-1791, 1...|
+|[[183-899-7774, 1...|
+|[[383-900-4962, 1...|
+|[[382-292-0437, 2...|
+|[[336-614-7381, 6...|
+|[[071-150-4666, 1...|
+|[[949-343-1457, 1...|
+|[[935-073-9672, 8...|
+|[[408-727-5905, 7...|
+|[[331-362-2554, 2...|
+|[[143-653-3009, 6...|
+|[[410-558-9206, 1...|
+|[[558-168-6290, 7...|
+|[[733-827-9149, 1...|
++--------------------+
+only showing top 20 rows
+
+>>> test1.select('Exp_Results.user.*').show()
++------------+----------+--------------------+------+--------------------+--------------------+--------------------+--------+------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|        cell|       dob|               email|gender|            location|                 md5|                name|password|       phone|             picture|registered|    salt|                sha1|              sha256|           username|
++------------+----------+--------------------+------+--------------------+--------------------+--------------------+--------+------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|996-851-5628|1166025933|gabriel.lavigne@e...|  male|[fauquier, britis...|75718bdaaf6ccb90f...|[gabriel, lavigne...|   flyer|367-186-5124|[https://randomus...|1104596340|IA8DhV2D|1ba424c2e50996669...|67f63d9b37ac3be5a...|       brownswan993|
+|765-277-2559| 690100963|liam.johnson@exam...|  male|[alma, new brunsw...|bf7336f628eadf9d8...| [liam, johnson, mr]|    mama|099-336-0509|[https://randomus...|1233006607|soY7F0cP|095215e5989840aea...|f120fff9400e7c5f5...|  greenbutterfly618|
+|356-376-7832| 517132166|ryan.margaret@exa...|  male|[glenwood, northw...|f57bc0ae8ca4c05ee...|[ryan, margaret, mr]|    lala|507-134-3250|[https://randomus...|1292698811|WKNQMdpY|2c28ab63e2ca8a4a1...|24402ad230b5b7621...|      crazysnake965|
+|478-671-9524|1341748840|zoe.martin@exampl...|female|[chatham, yukon, ...|48cdeeca78d8592f6...|  [zoe, martin, mrs]|    0420|602-110-4050|[https://randomus...|1054264745|GdK4Pn12|256cae3605df71449...|ef8fe46a5096e903d...|    organictiger612|
+|629-541-3142| 841135061|liam.brar@example...|  male|[deer lake, nova ...|b86d07feb322356fb...|    [liam, brar, mr]|    2580|701-952-1205|[https://randomus...|1218425005|zLwHhpoP|d407e79f77ce478f8...|fad4c444991e94a94...|      silverwolf218|
+|547-978-6535| 545845374|alexandre.chow@ex...|  male|[carleton, newfou...|d7dfa514d319cde3f...|[alexandre, chow,...|  7grout|529-152-7423|[https://randomus...|1413800174|Ugo0ok6x|7867e19bb16435749...|01f252376cb48ba00...|      heavygoose936|
+|606-435-1791|1294921474|dylan.côté@exampl...|  male|[odessa, alberta,...|0a088679e6a43c38b...|   [dylan, côté, mr]|blueblue|883-121-7966|[https://randomus...|1412468729|ScQoG8xO|8a2cc73732729f0c0...|d1ee1f2d626f12e6e...|      purplebear285|
+|183-899-7774|1084273652|sophie.côté@examp...|female|[inverness, manit...|d0508a015721d9949...|  [sophie, côté, ms]| chronic|789-900-1760|[https://randomus...|1379948134|wF5yMKJF|0cb3d2f2c56f12f0c...|a7c125e2821fadac2...|       bluetiger700|
+|383-900-4962|1283509106|lily.pelletier@ex...|female|[chelsea, newfoun...|522953067f7b830ce...|[lily, pelletier,...|  sticky|770-760-8758|[https://randomus...|1410955492|uVangg4m|bcc3f62c36a9a127e...|960bd59eee8216607...|        redmouse871|
+|382-292-0437| 297858298|benjamin.ennis@ex...|  male|[westport, yukon,...|5b12f8f5b115139d6...|[benjamin, ennis,...|  norway|022-648-7345|[https://randomus...|1266946919|xIzRhUz6|9bff92aae07d87d0a...|827b8f3a3c5521e8b...|       greenlion514|
+|336-614-7381| 616110358|emilie.kowalski@e...|female|[elgin, northwest...|25c94d3418c0601dd...|[emilie, kowalski...| canucks|779-392-9581|[https://randomus...|1096270119|LsnZ2GRS|3ddcb46ff1f7daf3b...|68f79f93f78083147...|        browncat661|
+|071-150-4666|1173606503|benjamin.ross@exa...|  male|[carleton, nunavu...|ed8fcc9de1177c5ea...|[benjamin, ross, mr]|  vienna|723-954-3200|[https://randomus...| 962679623|XGAJVZnx|f8095d1f65709ab2c...|5f7dd3e8d444f072c...|   ticklishmouse509|
+|949-343-1457|1254355622|bently.anderson@e...|  male|[beaumont, prince...|59fcae87b78bacebf...|[bently, anderson...|   butch|948-519-2783|[https://randomus...| 942903945|eFMsgkMJ|a18a8735b76aa759c...|1130031757e33ecd4...|ticklishelephant205|
+|935-073-9672| 886771985|avery.ennis@examp...|female|[winfield, nova s...|0b697e6b38acc30c6...|  [avery, ennis, ms]|  turner|294-893-8860|[https://randomus...|1276329846|O7Veq94T|8edd4fa828d3b2fb9...|4c9abd76befe0639f...|  organicgorilla658|
+|408-727-5905| 733995261|jade.barnaby@exam...|female|[woodstock, alber...|f60a4b623d6602806...|[jade, barnaby, mrs]|  miller|326-223-2378|[https://randomus...| 960790618|auLIeMl2|2df43ffd87b031b5c...|cc5ddbe7105f80d30...|       brownduck352|
+|331-362-2554| 261647007|florence.slawa@ex...|female|[chesterville, ne...|1e41d2dc29a5332ae...|[florence, slawa,...|    blam|806-506-7481|[https://randomus...|1433585731|dmrEy1da|7f710b5e6695b301b...|f4cd82863ed05efe7...|  yellowelephant588|
+|143-653-3009| 634636052|felix.chu@example...|  male|[springfield, qué...|15d0c2a8adf9a4c5a...|    [felix, chu, mr]|asdf1234|072-701-1228|[https://randomus...|1210481873|vJ8kq2WP|a059f6f82216bee7a...|b13ffa3425f2c0c50...|         tinydog855|
+|410-558-9206|1373782688|mathis.knight@exa...|  male|[cumberland, brit...|458d9af03062fcbb3...|[mathis, knight, mr]| sanfran|085-350-3838|[https://randomus...|1348532219|pQ3scNVu|7683cd15e1b75d4aa...|037498d38158f0334...|       crazylion588|
+|558-168-6290| 714846617|jack.denys@exampl...|  male|[cochrane, québec...|fa5ec72b5889a02d3...|   [jack, denys, mr]| tequila|188-183-9472|[https://randomus...|1127016117|JotFxHv8|30c98881146a586f4...|c7ba6114b9ba202ad...|       yellowdog812|
+|733-827-9149|  17046885|florence.barnaby@...|female|[clinton, saskatc...|d322deca7379f330d...|[florence, barnab...|  chanel|462-744-7443|[https://randomus...|1248887771|2fc3umOC|c45ae65b8f58ede1f...|f10015e784b223d43...|       tinymouse476|
++------------+----------+--------------------+------+--------------------+--------------------+--------------------+--------+------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+only showing top 20 rows
+
+>>> test1.printSchema()
+root
+ |-- Exp_Results: struct (nullable = true)
+ |    |-- user: struct (nullable = true)
+ |    |    |-- cell: string (nullable = true)
+ |    |    |-- dob: long (nullable = true)
+ |    |    |-- email: string (nullable = true)
+ |    |    |-- gender: string (nullable = true)
+ |    |    |-- location: struct (nullable = true)
+ |    |    |    |-- city: string (nullable = true)
+ |    |    |    |-- state: string (nullable = true)
+ |    |    |    |-- street: string (nullable = true)
+ |    |    |    |-- zip: long (nullable = true)
+ |    |    |-- md5: string (nullable = true)
+ |    |    |-- name: struct (nullable = true)
+ |    |    |    |-- first: string (nullable = true)
+ |    |    |    |-- last: string (nullable = true)
+ |    |    |    |-- title: string (nullable = true)
+ |    |    |-- password: string (nullable = true)
+ |    |    |-- phone: string (nullable = true)
+ |    |    |-- picture: struct (nullable = true)
+ |    |    |    |-- large: string (nullable = true)
+ |    |    |    |-- medium: string (nullable = true)
+ |    |    |    |-- thumbnail: string (nullable = true)
+ |    |    |-- registered: long (nullable = true)
+ |    |    |-- salt: string (nullable = true)
+ |    |    |-- sha1: string (nullable = true)
+ |    |    |-- sha256: string (nullable = true)
+ |    |    |-- username: string (nullable = true)
+
+>>> test2=test1.select('Exp_Results.user.*')
+>>> test2.show()
++------------+----------+--------------------+------+--------------------+--------------------+--------------------+--------+------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|        cell|       dob|               email|gender|            location|                 md5|                name|password|       phone|             picture|registered|    salt|                sha1|              sha256|           username|
++------------+----------+--------------------+------+--------------------+--------------------+--------------------+--------+------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|996-851-5628|1166025933|gabriel.lavigne@e...|  male|[fauquier, britis...|75718bdaaf6ccb90f...|[gabriel, lavigne...|   flyer|367-186-5124|[https://randomus...|1104596340|IA8DhV2D|1ba424c2e50996669...|67f63d9b37ac3be5a...|       brownswan993|
+|765-277-2559| 690100963|liam.johnson@exam...|  male|[alma, new brunsw...|bf7336f628eadf9d8...| [liam, johnson, mr]|    mama|099-336-0509|[https://randomus...|1233006607|soY7F0cP|095215e5989840aea...|f120fff9400e7c5f5...|  greenbutterfly618|
+|356-376-7832| 517132166|ryan.margaret@exa...|  male|[glenwood, northw...|f57bc0ae8ca4c05ee...|[ryan, margaret, mr]|    lala|507-134-3250|[https://randomus...|1292698811|WKNQMdpY|2c28ab63e2ca8a4a1...|24402ad230b5b7621...|      crazysnake965|
+|478-671-9524|1341748840|zoe.martin@exampl...|female|[chatham, yukon, ...|48cdeeca78d8592f6...|  [zoe, martin, mrs]|    0420|602-110-4050|[https://randomus...|1054264745|GdK4Pn12|256cae3605df71449...|ef8fe46a5096e903d...|    organictiger612|
+|629-541-3142| 841135061|liam.brar@example...|  male|[deer lake, nova ...|b86d07feb322356fb...|    [liam, brar, mr]|    2580|701-952-1205|[https://randomus...|1218425005|zLwHhpoP|d407e79f77ce478f8...|fad4c444991e94a94...|      silverwolf218|
+|547-978-6535| 545845374|alexandre.chow@ex...|  male|[carleton, newfou...|d7dfa514d319cde3f...|[alexandre, chow,...|  7grout|529-152-7423|[https://randomus...|1413800174|Ugo0ok6x|7867e19bb16435749...|01f252376cb48ba00...|      heavygoose936|
+|606-435-1791|1294921474|dylan.côté@exampl...|  male|[odessa, alberta,...|0a088679e6a43c38b...|   [dylan, côté, mr]|blueblue|883-121-7966|[https://randomus...|1412468729|ScQoG8xO|8a2cc73732729f0c0...|d1ee1f2d626f12e6e...|      purplebear285|
+|183-899-7774|1084273652|sophie.côté@examp...|female|[inverness, manit...|d0508a015721d9949...|  [sophie, côté, ms]| chronic|789-900-1760|[https://randomus...|1379948134|wF5yMKJF|0cb3d2f2c56f12f0c...|a7c125e2821fadac2...|       bluetiger700|
+|383-900-4962|1283509106|lily.pelletier@ex...|female|[chelsea, newfoun...|522953067f7b830ce...|[lily, pelletier,...|  sticky|770-760-8758|[https://randomus...|1410955492|uVangg4m|bcc3f62c36a9a127e...|960bd59eee8216607...|        redmouse871|
+|382-292-0437| 297858298|benjamin.ennis@ex...|  male|[westport, yukon,...|5b12f8f5b115139d6...|[benjamin, ennis,...|  norway|022-648-7345|[https://randomus...|1266946919|xIzRhUz6|9bff92aae07d87d0a...|827b8f3a3c5521e8b...|       greenlion514|
+|336-614-7381| 616110358|emilie.kowalski@e...|female|[elgin, northwest...|25c94d3418c0601dd...|[emilie, kowalski...| canucks|779-392-9581|[https://randomus...|1096270119|LsnZ2GRS|3ddcb46ff1f7daf3b...|68f79f93f78083147...|        browncat661|
+|071-150-4666|1173606503|benjamin.ross@exa...|  male|[carleton, nunavu...|ed8fcc9de1177c5ea...|[benjamin, ross, mr]|  vienna|723-954-3200|[https://randomus...| 962679623|XGAJVZnx|f8095d1f65709ab2c...|5f7dd3e8d444f072c...|   ticklishmouse509|
+|949-343-1457|1254355622|bently.anderson@e...|  male|[beaumont, prince...|59fcae87b78bacebf...|[bently, anderson...|   butch|948-519-2783|[https://randomus...| 942903945|eFMsgkMJ|a18a8735b76aa759c...|1130031757e33ecd4...|ticklishelephant205|
+|935-073-9672| 886771985|avery.ennis@examp...|female|[winfield, nova s...|0b697e6b38acc30c6...|  [avery, ennis, ms]|  turner|294-893-8860|[https://randomus...|1276329846|O7Veq94T|8edd4fa828d3b2fb9...|4c9abd76befe0639f...|  organicgorilla658|
+|408-727-5905| 733995261|jade.barnaby@exam...|female|[woodstock, alber...|f60a4b623d6602806...|[jade, barnaby, mrs]|  miller|326-223-2378|[https://randomus...| 960790618|auLIeMl2|2df43ffd87b031b5c...|cc5ddbe7105f80d30...|       brownduck352|
+|331-362-2554| 261647007|florence.slawa@ex...|female|[chesterville, ne...|1e41d2dc29a5332ae...|[florence, slawa,...|    blam|806-506-7481|[https://randomus...|1433585731|dmrEy1da|7f710b5e6695b301b...|f4cd82863ed05efe7...|  yellowelephant588|
+|143-653-3009| 634636052|felix.chu@example...|  male|[springfield, qué...|15d0c2a8adf9a4c5a...|    [felix, chu, mr]|asdf1234|072-701-1228|[https://randomus...|1210481873|vJ8kq2WP|a059f6f82216bee7a...|b13ffa3425f2c0c50...|         tinydog855|
+|410-558-9206|1373782688|mathis.knight@exa...|  male|[cumberland, brit...|458d9af03062fcbb3...|[mathis, knight, mr]| sanfran|085-350-3838|[https://randomus...|1348532219|pQ3scNVu|7683cd15e1b75d4aa...|037498d38158f0334...|       crazylion588|
+|558-168-6290| 714846617|jack.denys@exampl...|  male|[cochrane, québec...|fa5ec72b5889a02d3...|   [jack, denys, mr]| tequila|188-183-9472|[https://randomus...|1127016117|JotFxHv8|30c98881146a586f4...|c7ba6114b9ba202ad...|       yellowdog812|
+|733-827-9149|  17046885|florence.barnaby@...|female|[clinton, saskatc...|d322deca7379f330d...|[florence, barnab...|  chanel|462-744-7443|[https://randomus...|1248887771|2fc3umOC|c45ae65b8f58ede1f...|f10015e784b223d43...|       tinymouse476|
++------------+----------+--------------------+------+--------------------+--------------------+--------------------+--------+------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+only showing top 20 rows
+
+>>> test2.printSchema()
+root
+ |-- cell: string (nullable = true)
+ |-- dob: long (nullable = true)
+ |-- email: string (nullable = true)
+ |-- gender: string (nullable = true)
+ |-- location: struct (nullable = true)
+ |    |-- city: string (nullable = true)
+ |    |-- state: string (nullable = true)
+ |    |-- street: string (nullable = true)
+ |    |-- zip: long (nullable = true)
+ |-- md5: string (nullable = true)
+ |-- name: struct (nullable = true)
+ |    |-- first: string (nullable = true)
+ |    |-- last: string (nullable = true)
+ |    |-- title: string (nullable = true)
+ |-- password: string (nullable = true)
+ |-- phone: string (nullable = true)
+ |-- picture: struct (nullable = true)
+ |    |-- large: string (nullable = true)
+ |    |-- medium: string (nullable = true)
+ |    |-- thumbnail: string (nullable = true)
+ |-- registered: long (nullable = true)
+ |-- salt: string (nullable = true)
+ |-- sha1: string (nullable = true)
+ |-- sha256: string (nullable = true)
+ |-- username: string (nullable = true)
+
+>>>  test2.select('cell', 'dob', 'email', 'gender', 'location.*', 'md5', 'name.*', 'password', 'phone', 'picture.*', 'registered', 'salt', 'sha1', 'sha256', 'username').show()
+  File "<stdin>", line 1
+    test2.select('cell', 'dob', 'email', 'gender', 'location.*', 'md5', 'name.*', 'password', 'phone', 'picture.*', 'registered', 'salt', 'sha1', 'sha256', 'username').show()
+    ^
+IndentationError: unexpected indent
+>>> test2.select('cell', 'dob', 'email', 'gender', 'location.*', 'md5', 'name.*', 'password', 'phone', 'picture.*', 'registered', 'salt', 'sha1', 'sha256', 'username').show()
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|        cell|       dob|               email|gender|        city|               state|              street|  zip|                 md5|    first|     last|title|password|       phone|               large|              medium|           thumbnail|registered|    salt|                sha1|              sha256|           username|
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|996-851-5628|1166025933|gabriel.lavigne@e...|  male|    fauquier|    british columbia|        8598 york st|72447|75718bdaaf6ccb90f...|  gabriel|  lavigne|   mr|   flyer|367-186-5124|https://randomuse...|https://randomuse...|https://randomuse...|1104596340|IA8DhV2D|1ba424c2e50996669...|67f63d9b37ac3be5a...|       brownswan993|
+|765-277-2559| 690100963|liam.johnson@exam...|  male|        alma|       new brunswick|       1682 elgin st|36728|bf7336f628eadf9d8...|     liam|  johnson|   mr|    mama|099-336-0509|https://randomuse...|https://randomuse...|https://randomuse...|1233006607|soY7F0cP|095215e5989840aea...|f120fff9400e7c5f5...|  greenbutterfly618|
+|356-376-7832| 517132166|ryan.margaret@exa...|  male|    glenwood|northwest territo...|  6367 wellington st|24490|f57bc0ae8ca4c05ee...|     ryan| margaret|   mr|    lala|507-134-3250|https://randomuse...|https://randomuse...|https://randomuse...|1292698811|WKNQMdpY|2c28ab63e2ca8a4a1...|24402ad230b5b7621...|      crazysnake965|
+|478-671-9524|1341748840|zoe.martin@exampl...|female|     chatham|               yukon|3904 lake of bays...|18405|48cdeeca78d8592f6...|      zoe|   martin|  mrs|    0420|602-110-4050|https://randomuse...|https://randomuse...|https://randomuse...|1054264745|GdK4Pn12|256cae3605df71449...|ef8fe46a5096e903d...|    organictiger612|
+|629-541-3142| 841135061|liam.brar@example...|  male|   deer lake|         nova scotia|     8650 pierre ave|27610|b86d07feb322356fb...|     liam|     brar|   mr|    2580|701-952-1205|https://randomuse...|https://randomuse...|https://randomuse...|1218425005|zLwHhpoP|d407e79f77ce478f8...|fad4c444991e94a94...|      silverwolf218|
+|547-978-6535| 545845374|alexandre.chow@ex...|  male|    carleton|newfoundland and ...|        4594 pine rd|94713|d7dfa514d319cde3f...|alexandre|     chow|   mr|  7grout|529-152-7423|https://randomuse...|https://randomuse...|https://randomuse...|1413800174|Ugo0ok6x|7867e19bb16435749...|01f252376cb48ba00...|      heavygoose936|
+|606-435-1791|1294921474|dylan.côté@exampl...|  male|      odessa|             alberta|    9622 college ave|62458|0a088679e6a43c38b...|    dylan|     côté|   mr|blueblue|883-121-7966|https://randomuse...|https://randomuse...|https://randomuse...|1412468729|ScQoG8xO|8a2cc73732729f0c0...|d1ee1f2d626f12e6e...|      purplebear285|
+|183-899-7774|1084273652|sophie.côté@examp...|female|   inverness|            manitoba|       5408 20th ave|96561|d0508a015721d9949...|   sophie|     côté|   ms| chronic|789-900-1760|https://randomuse...|https://randomuse...|https://randomuse...|1379948134|wF5yMKJF|0cb3d2f2c56f12f0c...|a7c125e2821fadac2...|       bluetiger700|
+|383-900-4962|1283509106|lily.pelletier@ex...|female|     chelsea|newfoundland and ...|       6047 queen st|23611|522953067f7b830ce...|     lily|pelletier| miss|  sticky|770-760-8758|https://randomuse...|https://randomuse...|https://randomuse...|1410955492|uVangg4m|bcc3f62c36a9a127e...|960bd59eee8216607...|        redmouse871|
+|382-292-0437| 297858298|benjamin.ennis@ex...|  male|    westport|               yukon|        9928 peel st|23040|5b12f8f5b115139d6...| benjamin|    ennis|   mr|  norway|022-648-7345|https://randomuse...|https://randomuse...|https://randomuse...|1266946919|xIzRhUz6|9bff92aae07d87d0a...|827b8f3a3c5521e8b...|       greenlion514|
+|336-614-7381| 616110358|emilie.kowalski@e...|female|       elgin|northwest territo...|2864 st. lawrence...|97611|25c94d3418c0601dd...|   emilie| kowalski| miss| canucks|779-392-9581|https://randomuse...|https://randomuse...|https://randomuse...|1096270119|LsnZ2GRS|3ddcb46ff1f7daf3b...|68f79f93f78083147...|        browncat661|
+|071-150-4666|1173606503|benjamin.ross@exa...|  male|    carleton|             nunavut|         6713 3rd st|66394|ed8fcc9de1177c5ea...| benjamin|     ross|   mr|  vienna|723-954-3200|https://randomuse...|https://randomuse...|https://randomuse...| 962679623|XGAJVZnx|f8095d1f65709ab2c...|5f7dd3e8d444f072c...|   ticklishmouse509|
+|949-343-1457|1254355622|bently.anderson@e...|  male|    beaumont|prince edward island|       8802 22nd ave|18555|59fcae87b78bacebf...|   bently| anderson|   mr|   butch|948-519-2783|https://randomuse...|https://randomuse...|https://randomuse...| 942903945|eFMsgkMJ|a18a8735b76aa759c...|1130031757e33ecd4...|ticklishelephant205|
+|935-073-9672| 886771985|avery.ennis@examp...|female|    winfield|         nova scotia|   2681 victoria ave|79676|0b697e6b38acc30c6...|    avery|    ennis|   ms|  turner|294-893-8860|https://randomuse...|https://randomuse...|https://randomuse...|1276329846|O7Veq94T|8edd4fa828d3b2fb9...|4c9abd76befe0639f...|  organicgorilla658|
+|408-727-5905| 733995261|jade.barnaby@exam...|female|   woodstock|             alberta|   7218 richmond ave|39301|f60a4b623d6602806...|     jade|  barnaby|  mrs|  miller|326-223-2378|https://randomuse...|https://randomuse...|https://randomuse...| 960790618|auLIeMl2|2df43ffd87b031b5c...|cc5ddbe7105f80d30...|       brownduck352|
+|331-362-2554| 261647007|florence.slawa@ex...|female|chesterville|newfoundland and ...|        2618 15th st|49550|1e41d2dc29a5332ae...| florence|    slawa| miss|    blam|806-506-7481|https://randomuse...|https://randomuse...|https://randomuse...|1433585731|dmrEy1da|7f710b5e6695b301b...|f4cd82863ed05efe7...|  yellowelephant588|
+|143-653-3009| 634636052|felix.chu@example...|  male| springfield|              québec|3472 st. catherin...|62250|15d0c2a8adf9a4c5a...|    felix|      chu|   mr|asdf1234|072-701-1228|https://randomuse...|https://randomuse...|https://randomuse...|1210481873|vJ8kq2WP|a059f6f82216bee7a...|b13ffa3425f2c0c50...|         tinydog855|
+|410-558-9206|1373782688|mathis.knight@exa...|  male|  cumberland|    british columbia|2623 st. catherin...|45268|458d9af03062fcbb3...|   mathis|   knight|   mr| sanfran|085-350-3838|https://randomuse...|https://randomuse...|https://randomuse...|1348532219|pQ3scNVu|7683cd15e1b75d4aa...|037498d38158f0334...|       crazylion588|
+|558-168-6290| 714846617|jack.denys@exampl...|  male|    cochrane|              québec|     2937 pierre ave|96121|fa5ec72b5889a02d3...|     jack|    denys|   mr| tequila|188-183-9472|https://randomuse...|https://randomuse...|https://randomuse...|1127016117|JotFxHv8|30c98881146a586f4...|c7ba6114b9ba202ad...|       yellowdog812|
+|733-827-9149|  17046885|florence.barnaby@...|female|     clinton|        saskatchewan|     7157 dieppe ave|41789|d322deca7379f330d...| florence|  barnaby|   ms|  chanel|462-744-7443|https://randomuse...|https://randomuse...|https://randomuse...|1248887771|2fc3umOC|c45ae65b8f58ede1f...|f10015e784b223d43...|       tinymouse476|
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+only showing top 20 rows
+
+>>> test2.printSchema()
+root
+ |-- cell: string (nullable = true)
+ |-- dob: long (nullable = true)
+ |-- email: string (nullable = true)
+ |-- gender: string (nullable = true)
+ |-- location: struct (nullable = true)
+ |    |-- city: string (nullable = true)
+ |    |-- state: string (nullable = true)
+ |    |-- street: string (nullable = true)
+ |    |-- zip: long (nullable = true)
+ |-- md5: string (nullable = true)
+ |-- name: struct (nullable = true)
+ |    |-- first: string (nullable = true)
+ |    |-- last: string (nullable = true)
+ |    |-- title: string (nullable = true)
+ |-- password: string (nullable = true)
+ |-- phone: string (nullable = true)
+ |-- picture: struct (nullable = true)
+ |    |-- large: string (nullable = true)
+ |    |-- medium: string (nullable = true)
+ |    |-- thumbnail: string (nullable = true)
+ |-- registered: long (nullable = true)
+ |-- salt: string (nullable = true)
+ |-- sha1: string (nullable = true)
+ |-- sha256: string (nullable = true)
+ |-- username: string (nullable = true)
+
+>>> test3=test2.select('cell', 'dob', 'email', 'gender', 'location.*', 'md5', 'name.*', 'password', 'phone', 'picture.*', 'registered', 'salt', 'sha1', 'sha256', 'username')
+>>> test3.printSchema()
+root
+ |-- cell: string (nullable = true)
+ |-- dob: long (nullable = true)
+ |-- email: string (nullable = true)
+ |-- gender: string (nullable = true)
+ |-- city: string (nullable = true)
+ |-- state: string (nullable = true)
+ |-- street: string (nullable = true)
+ |-- zip: long (nullable = true)
+ |-- md5: string (nullable = true)
+ |-- first: string (nullable = true)
+ |-- last: string (nullable = true)
+ |-- title: string (nullable = true)
+ |-- password: string (nullable = true)
+ |-- phone: string (nullable = true)
+ |-- large: string (nullable = true)
+ |-- medium: string (nullable = true)
+ |-- thumbnail: string (nullable = true)
+ |-- registered: long (nullable = true)
+ |-- salt: string (nullable = true)
+ |-- sha1: string (nullable = true)
+ |-- sha256: string (nullable = true)
+ |-- username: string (nullable = true)
+
+>>> test3.show()
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|        cell|       dob|               email|gender|        city|               state|              street|  zip|                 md5|    first|     last|title|password|       phone|               large|              medium|           thumbnail|registered|    salt|                sha1|              sha256|           username|
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|996-851-5628|1166025933|gabriel.lavigne@e...|  male|    fauquier|    british columbia|        8598 york st|72447|75718bdaaf6ccb90f...|  gabriel|  lavigne|   mr|   flyer|367-186-5124|https://randomuse...|https://randomuse...|https://randomuse...|1104596340|IA8DhV2D|1ba424c2e50996669...|67f63d9b37ac3be5a...|       brownswan993|
+|765-277-2559| 690100963|liam.johnson@exam...|  male|        alma|       new brunswick|       1682 elgin st|36728|bf7336f628eadf9d8...|     liam|  johnson|   mr|    mama|099-336-0509|https://randomuse...|https://randomuse...|https://randomuse...|1233006607|soY7F0cP|095215e5989840aea...|f120fff9400e7c5f5...|  greenbutterfly618|
+|356-376-7832| 517132166|ryan.margaret@exa...|  male|    glenwood|northwest territo...|  6367 wellington st|24490|f57bc0ae8ca4c05ee...|     ryan| margaret|   mr|    lala|507-134-3250|https://randomuse...|https://randomuse...|https://randomuse...|1292698811|WKNQMdpY|2c28ab63e2ca8a4a1...|24402ad230b5b7621...|      crazysnake965|
+|478-671-9524|1341748840|zoe.martin@exampl...|female|     chatham|               yukon|3904 lake of bays...|18405|48cdeeca78d8592f6...|      zoe|   martin|  mrs|    0420|602-110-4050|https://randomuse...|https://randomuse...|https://randomuse...|1054264745|GdK4Pn12|256cae3605df71449...|ef8fe46a5096e903d...|    organictiger612|
+|629-541-3142| 841135061|liam.brar@example...|  male|   deer lake|         nova scotia|     8650 pierre ave|27610|b86d07feb322356fb...|     liam|     brar|   mr|    2580|701-952-1205|https://randomuse...|https://randomuse...|https://randomuse...|1218425005|zLwHhpoP|d407e79f77ce478f8...|fad4c444991e94a94...|      silverwolf218|
+|547-978-6535| 545845374|alexandre.chow@ex...|  male|    carleton|newfoundland and ...|        4594 pine rd|94713|d7dfa514d319cde3f...|alexandre|     chow|   mr|  7grout|529-152-7423|https://randomuse...|https://randomuse...|https://randomuse...|1413800174|Ugo0ok6x|7867e19bb16435749...|01f252376cb48ba00...|      heavygoose936|
+|606-435-1791|1294921474|dylan.côté@exampl...|  male|      odessa|             alberta|    9622 college ave|62458|0a088679e6a43c38b...|    dylan|     côté|   mr|blueblue|883-121-7966|https://randomuse...|https://randomuse...|https://randomuse...|1412468729|ScQoG8xO|8a2cc73732729f0c0...|d1ee1f2d626f12e6e...|      purplebear285|
+|183-899-7774|1084273652|sophie.côté@examp...|female|   inverness|            manitoba|       5408 20th ave|96561|d0508a015721d9949...|   sophie|     côté|   ms| chronic|789-900-1760|https://randomuse...|https://randomuse...|https://randomuse...|1379948134|wF5yMKJF|0cb3d2f2c56f12f0c...|a7c125e2821fadac2...|       bluetiger700|
+|383-900-4962|1283509106|lily.pelletier@ex...|female|     chelsea|newfoundland and ...|       6047 queen st|23611|522953067f7b830ce...|     lily|pelletier| miss|  sticky|770-760-8758|https://randomuse...|https://randomuse...|https://randomuse...|1410955492|uVangg4m|bcc3f62c36a9a127e...|960bd59eee8216607...|        redmouse871|
+|382-292-0437| 297858298|benjamin.ennis@ex...|  male|    westport|               yukon|        9928 peel st|23040|5b12f8f5b115139d6...| benjamin|    ennis|   mr|  norway|022-648-7345|https://randomuse...|https://randomuse...|https://randomuse...|1266946919|xIzRhUz6|9bff92aae07d87d0a...|827b8f3a3c5521e8b...|       greenlion514|
+|336-614-7381| 616110358|emilie.kowalski@e...|female|       elgin|northwest territo...|2864 st. lawrence...|97611|25c94d3418c0601dd...|   emilie| kowalski| miss| canucks|779-392-9581|https://randomuse...|https://randomuse...|https://randomuse...|1096270119|LsnZ2GRS|3ddcb46ff1f7daf3b...|68f79f93f78083147...|        browncat661|
+|071-150-4666|1173606503|benjamin.ross@exa...|  male|    carleton|             nunavut|         6713 3rd st|66394|ed8fcc9de1177c5ea...| benjamin|     ross|   mr|  vienna|723-954-3200|https://randomuse...|https://randomuse...|https://randomuse...| 962679623|XGAJVZnx|f8095d1f65709ab2c...|5f7dd3e8d444f072c...|   ticklishmouse509|
+|949-343-1457|1254355622|bently.anderson@e...|  male|    beaumont|prince edward island|       8802 22nd ave|18555|59fcae87b78bacebf...|   bently| anderson|   mr|   butch|948-519-2783|https://randomuse...|https://randomuse...|https://randomuse...| 942903945|eFMsgkMJ|a18a8735b76aa759c...|1130031757e33ecd4...|ticklishelephant205|
+|935-073-9672| 886771985|avery.ennis@examp...|female|    winfield|         nova scotia|   2681 victoria ave|79676|0b697e6b38acc30c6...|    avery|    ennis|   ms|  turner|294-893-8860|https://randomuse...|https://randomuse...|https://randomuse...|1276329846|O7Veq94T|8edd4fa828d3b2fb9...|4c9abd76befe0639f...|  organicgorilla658|
+|408-727-5905| 733995261|jade.barnaby@exam...|female|   woodstock|             alberta|   7218 richmond ave|39301|f60a4b623d6602806...|     jade|  barnaby|  mrs|  miller|326-223-2378|https://randomuse...|https://randomuse...|https://randomuse...| 960790618|auLIeMl2|2df43ffd87b031b5c...|cc5ddbe7105f80d30...|       brownduck352|
+|331-362-2554| 261647007|florence.slawa@ex...|female|chesterville|newfoundland and ...|        2618 15th st|49550|1e41d2dc29a5332ae...| florence|    slawa| miss|    blam|806-506-7481|https://randomuse...|https://randomuse...|https://randomuse...|1433585731|dmrEy1da|7f710b5e6695b301b...|f4cd82863ed05efe7...|  yellowelephant588|
+|143-653-3009| 634636052|felix.chu@example...|  male| springfield|              québec|3472 st. catherin...|62250|15d0c2a8adf9a4c5a...|    felix|      chu|   mr|asdf1234|072-701-1228|https://randomuse...|https://randomuse...|https://randomuse...|1210481873|vJ8kq2WP|a059f6f82216bee7a...|b13ffa3425f2c0c50...|         tinydog855|
+|410-558-9206|1373782688|mathis.knight@exa...|  male|  cumberland|    british columbia|2623 st. catherin...|45268|458d9af03062fcbb3...|   mathis|   knight|   mr| sanfran|085-350-3838|https://randomuse...|https://randomuse...|https://randomuse...|1348532219|pQ3scNVu|7683cd15e1b75d4aa...|037498d38158f0334...|       crazylion588|
+|558-168-6290| 714846617|jack.denys@exampl...|  male|    cochrane|              québec|     2937 pierre ave|96121|fa5ec72b5889a02d3...|     jack|    denys|   mr| tequila|188-183-9472|https://randomuse...|https://randomuse...|https://randomuse...|1127016117|JotFxHv8|30c98881146a586f4...|c7ba6114b9ba202ad...|       yellowdog812|
+|733-827-9149|  17046885|florence.barnaby@...|female|     clinton|        saskatchewan|     7157 dieppe ave|41789|d322deca7379f330d...| florence|  barnaby|   ms|  chanel|462-744-7443|https://randomuse...|https://randomuse...|https://randomuse...|1248887771|2fc3umOC|c45ae65b8f58ede1f...|f10015e784b223d43...|       tinymouse476|
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+only showing top 20 rows
+
+>>> test4=test3.select('gender','email').show()
++------+--------------------+
+|gender|               email|
++------+--------------------+
+|  male|gabriel.lavigne@e...|
+|  male|liam.johnson@exam...|
+|  male|ryan.margaret@exa...|
+|female|zoe.martin@exampl...|
+|  male|liam.brar@example...|
+|  male|alexandre.chow@ex...|
+|  male|dylan.côté@exampl...|
+|female|sophie.côté@examp...|
+|female|lily.pelletier@ex...|
+|  male|benjamin.ennis@ex...|
+|female|emilie.kowalski@e...|
+|  male|benjamin.ross@exa...|
+|  male|bently.anderson@e...|
+|female|avery.ennis@examp...|
+|female|jade.barnaby@exam...|
+|female|florence.slawa@ex...|
+|  male|felix.chu@example...|
+|  male|mathis.knight@exa...|
+|  male|jack.denys@exampl...|
+|female|florence.barnaby@...|
++------+--------------------+
+only showing top 20 rows
+
+>>> test4=test3.select('gender',F.substring('email', -12,12).alias('email_provider')).show()
++------+--------------+
+|gender|email_provider|
++------+--------------+
+|  male|  @example.com|
+|  male|  @example.com|
+|  male|  @example.com|
+|female|  @example.com|
+|  male|  @example.com|
+|  male|  @example.com|
+|  male|  @example.com|
+|female|  @example.com|
+|female|  @example.com|
+|  male|  @example.com|
+|female|  @example.com|
+|  male|  @example.com|
+|  male|  @example.com|
+|female|  @example.com|
+|female|  @example.com|
+|female|  @example.com|
+|  male|  @example.com|
+|  male|  @example.com|
+|  male|  @example.com|
+|female|  @example.com|
++------+--------------+
+only showing top 20 rows
+
+>>> test4=test3.select('gender',F.substring('email', -12,12).alias('email_provider')).groupBy('gender','email_provider').count().show()
++------+--------------+-----+
+|gender|email_provider|count|
++------+--------------+-----+
+|  male|  @example.com|  527|
+|female|  @example.com|  473|
++------+--------------+-----+
+
+>>> test5=test3.select('gender',F.substring('email', -12,12).alias('email_provider')).groupBy('gender','email_provider').count()
+>>> test5
+DataFrame[gender: string, email_provider: string, count: bigint]
+>>> test5.coalesce(1).write.format("com.databricks.spark.csv").option("header","true").save("taktaulah11111.csv")
+>>> test5.write.parquet("/spark/bin/myassessment.parquet")
+>>> test3.show()
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|        cell|       dob|               email|gender|        city|               state|              street|  zip|                 md5|    first|     last|title|password|       phone|               large|              medium|           thumbnail|registered|    salt|                sha1|              sha256|           username|
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+|996-851-5628|1166025933|gabriel.lavigne@e...|  male|    fauquier|    british columbia|        8598 york st|72447|75718bdaaf6ccb90f...|  gabriel|  lavigne|   mr|   flyer|367-186-5124|https://randomuse...|https://randomuse...|https://randomuse...|1104596340|IA8DhV2D|1ba424c2e50996669...|67f63d9b37ac3be5a...|       brownswan993|
+|765-277-2559| 690100963|liam.johnson@exam...|  male|        alma|       new brunswick|       1682 elgin st|36728|bf7336f628eadf9d8...|     liam|  johnson|   mr|    mama|099-336-0509|https://randomuse...|https://randomuse...|https://randomuse...|1233006607|soY7F0cP|095215e5989840aea...|f120fff9400e7c5f5...|  greenbutterfly618|
+|356-376-7832| 517132166|ryan.margaret@exa...|  male|    glenwood|northwest territo...|  6367 wellington st|24490|f57bc0ae8ca4c05ee...|     ryan| margaret|   mr|    lala|507-134-3250|https://randomuse...|https://randomuse...|https://randomuse...|1292698811|WKNQMdpY|2c28ab63e2ca8a4a1...|24402ad230b5b7621...|      crazysnake965|
+|478-671-9524|1341748840|zoe.martin@exampl...|female|     chatham|               yukon|3904 lake of bays...|18405|48cdeeca78d8592f6...|      zoe|   martin|  mrs|    0420|602-110-4050|https://randomuse...|https://randomuse...|https://randomuse...|1054264745|GdK4Pn12|256cae3605df71449...|ef8fe46a5096e903d...|    organictiger612|
+|629-541-3142| 841135061|liam.brar@example...|  male|   deer lake|         nova scotia|     8650 pierre ave|27610|b86d07feb322356fb...|     liam|     brar|   mr|    2580|701-952-1205|https://randomuse...|https://randomuse...|https://randomuse...|1218425005|zLwHhpoP|d407e79f77ce478f8...|fad4c444991e94a94...|      silverwolf218|
+|547-978-6535| 545845374|alexandre.chow@ex...|  male|    carleton|newfoundland and ...|        4594 pine rd|94713|d7dfa514d319cde3f...|alexandre|     chow|   mr|  7grout|529-152-7423|https://randomuse...|https://randomuse...|https://randomuse...|1413800174|Ugo0ok6x|7867e19bb16435749...|01f252376cb48ba00...|      heavygoose936|
+|606-435-1791|1294921474|dylan.côté@exampl...|  male|      odessa|             alberta|    9622 college ave|62458|0a088679e6a43c38b...|    dylan|     côté|   mr|blueblue|883-121-7966|https://randomuse...|https://randomuse...|https://randomuse...|1412468729|ScQoG8xO|8a2cc73732729f0c0...|d1ee1f2d626f12e6e...|      purplebear285|
+|183-899-7774|1084273652|sophie.côté@examp...|female|   inverness|            manitoba|       5408 20th ave|96561|d0508a015721d9949...|   sophie|     côté|   ms| chronic|789-900-1760|https://randomuse...|https://randomuse...|https://randomuse...|1379948134|wF5yMKJF|0cb3d2f2c56f12f0c...|a7c125e2821fadac2...|       bluetiger700|
+|383-900-4962|1283509106|lily.pelletier@ex...|female|     chelsea|newfoundland and ...|       6047 queen st|23611|522953067f7b830ce...|     lily|pelletier| miss|  sticky|770-760-8758|https://randomuse...|https://randomuse...|https://randomuse...|1410955492|uVangg4m|bcc3f62c36a9a127e...|960bd59eee8216607...|        redmouse871|
+|382-292-0437| 297858298|benjamin.ennis@ex...|  male|    westport|               yukon|        9928 peel st|23040|5b12f8f5b115139d6...| benjamin|    ennis|   mr|  norway|022-648-7345|https://randomuse...|https://randomuse...|https://randomuse...|1266946919|xIzRhUz6|9bff92aae07d87d0a...|827b8f3a3c5521e8b...|       greenlion514|
+|336-614-7381| 616110358|emilie.kowalski@e...|female|       elgin|northwest territo...|2864 st. lawrence...|97611|25c94d3418c0601dd...|   emilie| kowalski| miss| canucks|779-392-9581|https://randomuse...|https://randomuse...|https://randomuse...|1096270119|LsnZ2GRS|3ddcb46ff1f7daf3b...|68f79f93f78083147...|        browncat661|
+|071-150-4666|1173606503|benjamin.ross@exa...|  male|    carleton|             nunavut|         6713 3rd st|66394|ed8fcc9de1177c5ea...| benjamin|     ross|   mr|  vienna|723-954-3200|https://randomuse...|https://randomuse...|https://randomuse...| 962679623|XGAJVZnx|f8095d1f65709ab2c...|5f7dd3e8d444f072c...|   ticklishmouse509|
+|949-343-1457|1254355622|bently.anderson@e...|  male|    beaumont|prince edward island|       8802 22nd ave|18555|59fcae87b78bacebf...|   bently| anderson|   mr|   butch|948-519-2783|https://randomuse...|https://randomuse...|https://randomuse...| 942903945|eFMsgkMJ|a18a8735b76aa759c...|1130031757e33ecd4...|ticklishelephant205|
+|935-073-9672| 886771985|avery.ennis@examp...|female|    winfield|         nova scotia|   2681 victoria ave|79676|0b697e6b38acc30c6...|    avery|    ennis|   ms|  turner|294-893-8860|https://randomuse...|https://randomuse...|https://randomuse...|1276329846|O7Veq94T|8edd4fa828d3b2fb9...|4c9abd76befe0639f...|  organicgorilla658|
+|408-727-5905| 733995261|jade.barnaby@exam...|female|   woodstock|             alberta|   7218 richmond ave|39301|f60a4b623d6602806...|     jade|  barnaby|  mrs|  miller|326-223-2378|https://randomuse...|https://randomuse...|https://randomuse...| 960790618|auLIeMl2|2df43ffd87b031b5c...|cc5ddbe7105f80d30...|       brownduck352|
+|331-362-2554| 261647007|florence.slawa@ex...|female|chesterville|newfoundland and ...|        2618 15th st|49550|1e41d2dc29a5332ae...| florence|    slawa| miss|    blam|806-506-7481|https://randomuse...|https://randomuse...|https://randomuse...|1433585731|dmrEy1da|7f710b5e6695b301b...|f4cd82863ed05efe7...|  yellowelephant588|
+|143-653-3009| 634636052|felix.chu@example...|  male| springfield|              québec|3472 st. catherin...|62250|15d0c2a8adf9a4c5a...|    felix|      chu|   mr|asdf1234|072-701-1228|https://randomuse...|https://randomuse...|https://randomuse...|1210481873|vJ8kq2WP|a059f6f82216bee7a...|b13ffa3425f2c0c50...|         tinydog855|
+|410-558-9206|1373782688|mathis.knight@exa...|  male|  cumberland|    british columbia|2623 st. catherin...|45268|458d9af03062fcbb3...|   mathis|   knight|   mr| sanfran|085-350-3838|https://randomuse...|https://randomuse...|https://randomuse...|1348532219|pQ3scNVu|7683cd15e1b75d4aa...|037498d38158f0334...|       crazylion588|
+|558-168-6290| 714846617|jack.denys@exampl...|  male|    cochrane|              québec|     2937 pierre ave|96121|fa5ec72b5889a02d3...|     jack|    denys|   mr| tequila|188-183-9472|https://randomuse...|https://randomuse...|https://randomuse...|1127016117|JotFxHv8|30c98881146a586f4...|c7ba6114b9ba202ad...|       yellowdog812|
+|733-827-9149|  17046885|florence.barnaby@...|female|     clinton|        saskatchewan|     7157 dieppe ave|41789|d322deca7379f330d...| florence|  barnaby|   ms|  chanel|462-744-7443|https://randomuse...|https://randomuse...|https://randomuse...|1248887771|2fc3umOC|c45ae65b8f58ede1f...|f10015e784b223d43...|       tinymouse476|
++------------+----------+--------------------+------+------------+--------------------+--------------------+-----+--------------------+---------+---------+-----+--------+------------+--------------------+--------------------+--------------------+----------+--------+--------------------+--------------------+-------------------+
+only showing top 20 rows
+
+>>> test5.show()
++------+--------------+-----+
+|gender|email_provider|count|
++------+--------------+-----+
+|  male|  @example.com|  527|
+|female|  @example.com|  473|
++------+--------------+-----+
+
+>>> test3
+DataFrame[cell: string, dob: bigint, email: string, gender: string, city: string, state: string, street: string, zip: bigint, md5: string, first: string, last: string, title: string, password: string, phone: string, large: string, medium: string, thumbnail: string, registered: bigint, salt: string, sha1: string, sha256: string, username: string]
+>>> test3.write.partitionBy('gender','state').mode('overwrite').parquet('/spark/bin/test123456.parquet')
+>>> test5=test3.select('email','gender','city','state','last','phone','registered','username','dob')
+>>> test5.printSchema()
+root
+ |-- email: string (nullable = true)
+ |-- gender: string (nullable = true)
+ |-- city: string (nullable = true)
+ |-- state: string (nullable = true)
+ |-- last: string (nullable = true)
+ |-- phone: string (nullable = true)
+ |-- registered: long (nullable = true)
+ |-- username: string (nullable = true)
+ |-- dob: long (nullable = true)
+
+>>> test5.show()
++--------------------+------+------------+--------------------+---------+------------+----------+-------------------+----------+
+|               email|gender|        city|               state|     last|       phone|registered|           username|       dob|
++--------------------+------+------------+--------------------+---------+------------+----------+-------------------+----------+
+|gabriel.lavigne@e...|  male|    fauquier|    british columbia|  lavigne|367-186-5124|1104596340|       brownswan993|1166025933|
+|liam.johnson@exam...|  male|        alma|       new brunswick|  johnson|099-336-0509|1233006607|  greenbutterfly618| 690100963|
+|ryan.margaret@exa...|  male|    glenwood|northwest territo...| margaret|507-134-3250|1292698811|      crazysnake965| 517132166|
+|zoe.martin@exampl...|female|     chatham|               yukon|   martin|602-110-4050|1054264745|    organictiger612|1341748840|
+|liam.brar@example...|  male|   deer lake|         nova scotia|     brar|701-952-1205|1218425005|      silverwolf218| 841135061|
+|alexandre.chow@ex...|  male|    carleton|newfoundland and ...|     chow|529-152-7423|1413800174|      heavygoose936| 545845374|
+|dylan.côté@exampl...|  male|      odessa|             alberta|     côté|883-121-7966|1412468729|      purplebear285|1294921474|
+|sophie.côté@examp...|female|   inverness|            manitoba|     côté|789-900-1760|1379948134|       bluetiger700|1084273652|
+|lily.pelletier@ex...|female|     chelsea|newfoundland and ...|pelletier|770-760-8758|1410955492|        redmouse871|1283509106|
+|benjamin.ennis@ex...|  male|    westport|               yukon|    ennis|022-648-7345|1266946919|       greenlion514| 297858298|
+|emilie.kowalski@e...|female|       elgin|northwest territo...| kowalski|779-392-9581|1096270119|        browncat661| 616110358|
+|benjamin.ross@exa...|  male|    carleton|             nunavut|     ross|723-954-3200| 962679623|   ticklishmouse509|1173606503|
+|bently.anderson@e...|  male|    beaumont|prince edward island| anderson|948-519-2783| 942903945|ticklishelephant205|1254355622|
+|avery.ennis@examp...|female|    winfield|         nova scotia|    ennis|294-893-8860|1276329846|  organicgorilla658| 886771985|
+|jade.barnaby@exam...|female|   woodstock|             alberta|  barnaby|326-223-2378| 960790618|       brownduck352| 733995261|
+|florence.slawa@ex...|female|chesterville|newfoundland and ...|    slawa|806-506-7481|1433585731|  yellowelephant588| 261647007|
+|felix.chu@example...|  male| springfield|              québec|      chu|072-701-1228|1210481873|         tinydog855| 634636052|
+|mathis.knight@exa...|  male|  cumberland|    british columbia|   knight|085-350-3838|1348532219|       crazylion588|1373782688|
+|jack.denys@exampl...|  male|    cochrane|              québec|    denys|188-183-9472|1127016117|       yellowdog812| 714846617|
+|florence.barnaby@...|female|     clinton|        saskatchewan|  barnaby|462-744-7443|1248887771|       tinymouse476|  17046885|
++--------------------+------+------------+--------------------+---------+------------+----------+-------------------+----------+
+only showing top 20 rows
+
+>>> from pyspark.sql.functions import current_timestamp
+>>> test7=test5.withColumn('current_time',current_timestamp())
+>>> test7.show()
++--------------------+------+------------+--------------------+---------+------------+----------+-------------------+----------+--------------------+
+|               email|gender|        city|               state|     last|       phone|registered|           username|       dob|        current_time|
++--------------------+------+------------+--------------------+---------+------------+----------+-------------------+----------+--------------------+
+|gabriel.lavigne@e...|  male|    fauquier|    british columbia|  lavigne|367-186-5124|1104596340|       brownswan993|1166025933|2021-04-29 13:37:...|
+|liam.johnson@exam...|  male|        alma|       new brunswick|  johnson|099-336-0509|1233006607|  greenbutterfly618| 690100963|2021-04-29 13:37:...|
+|ryan.margaret@exa...|  male|    glenwood|northwest territo...| margaret|507-134-3250|1292698811|      crazysnake965| 517132166|2021-04-29 13:37:...|
+|zoe.martin@exampl...|female|     chatham|               yukon|   martin|602-110-4050|1054264745|    organictiger612|1341748840|2021-04-29 13:37:...|
+|liam.brar@example...|  male|   deer lake|         nova scotia|     brar|701-952-1205|1218425005|      silverwolf218| 841135061|2021-04-29 13:37:...|
+|alexandre.chow@ex...|  male|    carleton|newfoundland and ...|     chow|529-152-7423|1413800174|      heavygoose936| 545845374|2021-04-29 13:37:...|
+|dylan.côté@exampl...|  male|      odessa|             alberta|     côté|883-121-7966|1412468729|      purplebear285|1294921474|2021-04-29 13:37:...|
+|sophie.côté@examp...|female|   inverness|            manitoba|     côté|789-900-1760|1379948134|       bluetiger700|1084273652|2021-04-29 13:37:...|
+|lily.pelletier@ex...|female|     chelsea|newfoundland and ...|pelletier|770-760-8758|1410955492|        redmouse871|1283509106|2021-04-29 13:37:...|
+|benjamin.ennis@ex...|  male|    westport|               yukon|    ennis|022-648-7345|1266946919|       greenlion514| 297858298|2021-04-29 13:37:...|
+|emilie.kowalski@e...|female|       elgin|northwest territo...| kowalski|779-392-9581|1096270119|        browncat661| 616110358|2021-04-29 13:37:...|
+|benjamin.ross@exa...|  male|    carleton|             nunavut|     ross|723-954-3200| 962679623|   ticklishmouse509|1173606503|2021-04-29 13:37:...|
+|bently.anderson@e...|  male|    beaumont|prince edward island| anderson|948-519-2783| 942903945|ticklishelephant205|1254355622|2021-04-29 13:37:...|
+|avery.ennis@examp...|female|    winfield|         nova scotia|    ennis|294-893-8860|1276329846|  organicgorilla658| 886771985|2021-04-29 13:37:...|
+|jade.barnaby@exam...|female|   woodstock|             alberta|  barnaby|326-223-2378| 960790618|       brownduck352| 733995261|2021-04-29 13:37:...|
+|florence.slawa@ex...|female|chesterville|newfoundland and ...|    slawa|806-506-7481|1433585731|  yellowelephant588| 261647007|2021-04-29 13:37:...|
+|felix.chu@example...|  male| springfield|              québec|      chu|072-701-1228|1210481873|         tinydog855| 634636052|2021-04-29 13:37:...|
+|mathis.knight@exa...|  male|  cumberland|    british columbia|   knight|085-350-3838|1348532219|       crazylion588|1373782688|2021-04-29 13:37:...|
+|jack.denys@exampl...|  male|    cochrane|              québec|    denys|188-183-9472|1127016117|       yellowdog812| 714846617|2021-04-29 13:37:...|
+|florence.barnaby@...|female|     clinton|        saskatchewan|  barnaby|462-744-7443|1248887771|       tinymouse476|  17046885|2021-04-29 13:37:...|
++--------------------+------+------------+--------------------+---------+------------+----------+-------------------+----------+--------------------+
+only showing top 20 rows
+
+>>> test7.write.partitionBy('gender','state').mode('overwrite').parquet('/spark/bin/Assessment2.parquet')
+>>> test5.coalesce(1).write.format("com.databricks.spark.csv").option("header","true").save("AssessmentCSV.csv")
+>>> test4.show()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'NoneType' object has no attribute 'show'
+>>> test9=test3.select('gender',F.substring('email', -12,12).alias('email_provider')).groupBy('gender','email_provider').count()
+>>> test9.show()
++------+--------------+-----+
+|gender|email_provider|count|
++------+--------------+-----+
+|  male|  @example.com|  527|
+|female|  @example.com|  473|
++------+--------------+-----+
+
+>>> test9.coalesce(1).write.format("com.databricks.spark.csv").option("header","true").save("MyAssessmentCSV.csv")
